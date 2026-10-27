@@ -495,4 +495,56 @@ try{
 }catch(e){}
 </script>
 </body>
+<section id="scores-live" style="background:#080b0a;color:white;padding:20px;font-family:Arial">
+  <h2 style="color:#35f08b">⚽ SCORES EN DIRECT</h2>
+  <p id="etat-scores">Chargement des matchs...</p>
+  <div id="liste-scores"></div>
+</section>
+
+<script>
+async function chargerScores() {
+  const etat = document.getElementById("etat-scores");
+  const liste = document.getElementById("liste-scores");
+
+  try {
+    const r = await fetch(
+      "https://bold-frost-0826.yahiaramdani710.workers.dev/"
+    );
+    if (!r.ok) throw new Error("Erreur réseau");
+
+    const data = await r.json();
+    if (data.errors && Object.keys(data.errors).length) {
+      throw new Error("Erreur API");
+    }
+
+    const matchs = data.response || [];
+    liste.replaceChildren();
+
+    if (!matchs.length) {
+      etat.textContent = "Aucun match en direct actuellement.";
+      return;
+    }
+
+    etat.textContent = "🔴 " + matchs.length + " match(s) en direct";
+
+    matchs.forEach(m => {
+      const carte = document.createElement("p");
+      carte.style.cssText =
+        "background:#111815;padding:15px;border-radius:10px";
+      carte.textContent =
+        m.teams.home.name + " " + (m.goals.home ?? 0) +
+        " - " + (m.goals.away ?? 0) + " " +
+        m.teams.away.name + " | " +
+        (m.fixture.status.elapsed ?? "") + "'";
+      liste.appendChild(carte);
+    });
+  } catch (e) {
+    etat.textContent = "Impossible de charger les scores.";
+  }
+}
+
+chargerScores();
+setInterval(chargerScores, 60000);
+</script>
+
 </html>
